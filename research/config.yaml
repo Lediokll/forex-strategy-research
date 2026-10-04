@@ -1,0 +1,86 @@
+# Research settings. FIXED on 2026-10-03, BEFORE any result was seen.
+# Changing a parameter after looking at results invalidates the test;
+# the neighbourhood check (lookbacks x0.75 / x1.25) is the only variation.
+
+universe:
+  fx: [EURUSD, GBPUSD, USDJPY, AUDUSD, NZDUSD, USDCAD, USDCHF, EURJPY, GBPJPY, AUDJPY, EURGBP]
+  other: [XAUUSD]
+  # The broker lists 26 index CFDs, many of them overlapping (US500/US500M,
+  # US30/US30M...). Rule fixed before any result: one benchmark index per
+  # major equity market. All offered indices are recorded in symbols.json.
+  indices: [US500, DE40, UK100, JPN225]
+
+data:
+  daily_bars: 99999                 # as much as the broker gives
+  h4_bars: 99999
+  min_coverage: 0.90                # drop a symbol missing >10% of weekday bars since its first bar
+
+holdout_months: 12                  # most recent 12 months, locked until the end
+
+portfolio:
+  vol_lookback_days: 60             # realized vol for sizing (daily returns)
+  position_vol_target: 0.02         # each position sized to 2% annualized vol of equity
+  max_gross_risk: 0.20              # sum of position vols capped at 20%; scale all down if above
+  trading_days_per_year: 252
+
+costs:
+  # Typical cent-account spreads (price units), fixed before any result. The
+  # broker's own spread data is unusable as a level: bar spreads are per-bar
+  # minimums (often 0) and today's snapshot is a weekend quote. The cost model
+  # uses max(this floor, median H4 bar spread over the 2 years before the cut-off).
+  spread_floor:
+    EURUSD: 0.00012
+    GBPUSD: 0.00016
+    USDJPY: 0.014
+    AUDUSD: 0.00014
+    NZDUSD: 0.00020
+    USDCAD: 0.00020
+    USDCHF: 0.00018
+    EURJPY: 0.020
+    GBPJPY: 0.030
+    AUDJPY: 0.025
+    EURGBP: 0.00015
+    XAUUSD: 0.30
+    US500: 0.5
+    DE40: 2.0
+    UK100: 1.5
+    JPN225: 10.0
+  spread_multiplier: 1.0            # x the spread estimate above
+  slippage_spread_fraction: 0.25    # extra cost per fill, as a fraction of the spread
+  commission_per_lot_usd: 0.0       # round turn, standard lot
+  pessimistic_spread_multiplier: 2.0
+
+trend:
+  lookbacks_days: [63, 126, 252]    # ~3, 6, 12 months
+  rebalance: weekly                 # decided at the close of the first trading day of each week
+
+carry:
+  n_long: 3
+  n_short: 3
+  rebalance: monthly                # decided at the close of the first trading day of each month
+
+combo:
+  trend_weight: 0.5
+  carry_weight: 0.5
+
+hmm_filter:                         # per-symbol HMM on H4 bars, walk-forward
+  high_vol_scale: 0.5               # halve size when the symbol is in the high-vol state
+  n_states: 3
+  feature_window: 30                # 5 trading days of H4 bars
+  train_bars: 4500                  # ~3 years of H4
+  refit_every_bars: 500             # ~4 months
+  filter_burn_in_bars: 300
+  n_iter: 200
+  random_state: 42
+
+evaluation:
+  neighborhood_scales: [0.75, 1.0, 1.25]
+  monte_carlo_runs: 5000
+  monte_carlo_seed: 7
+
+cent_account:
+  start_equity_usd: 10.0
+  min_lot: 0.01
+  lot_step: 0.01
+  contract_size_multiplier: 0.01    # cent lot = standard contract x 0.01 (EURUSD: 1,000 units/lot)
+  leverage: 500

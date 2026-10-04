@@ -1,0 +1,36 @@
+# Python caches (bytecode embeds absolute local paths)
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Private config and secrets
+config.local.yaml
+.env
+.env.*
+
+# Runtime state written by the bot (virtual account incl. account login, kill switch)
+state/
+*.tmp
+
+# Logs (contain local paths and account details)
+logs/
+*.log
+
+# Market data downloaded from the broker (re-download with --download).
+# Anchored with a leading slash so the src/data/ package is NOT ignored.
+/data/
+/research/data/
+
+# Research holdout marker (local experiment state)
+research/results/HOLDOUT_USED.json
+
+# Notebooks, screenshots and other personal artefacts
+*.ipynb
+.ipynb_checkpoints/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+Thumbs.db
+desktop.ini

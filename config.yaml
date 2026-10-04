@@ -1,0 +1,70 @@
+# Every tunable setting for the bot. Unknown keys are rejected at startup
+# (typo protection), so add new settings to src/config.py first.
+
+mode: demo                  # backtest | demo | live  (CLI --mode overrides)
+symbol: EURUSD
+magic_number: 20260519      # identifies this bot's orders/positions/deals
+
+strategy:
+  timeframe: M15
+  ema_pullback: 20          # entry: pullback to this EMA
+  ema_trend_fast: 50        # trend bias: fast > slow -> longs only
+  ema_trend_slow: 200
+  atr_period: 14
+  sl_atr_mult: 1.5          # stop loss = 1.5 x ATR(14)
+  tp_r_mult: 2.0            # take profit = 2 x stop distance
+  pullback_bars: 2          # EMA20 touch on the signal bar or the bar before
+  session_start_utc: "07:00"
+  session_end_utc: "17:00"
+  max_spread_pips: 1.5
+
+regime:
+  enabled: true
+  n_states: 3
+  feature_window: 16        # bars for drift/volatility features (4h on M15)
+  train_bars: 25000         # ~12 months of M15, trailing window
+  refit_every_bars: 2000    # ~1 month of M15
+  filter_burn_in_bars: 500  # forward-filter warm-up before the first labelled bar
+  n_iter: 200
+  random_state: 42
+
+risk:
+  lot_size: 0.01            # raised to the symbol minimum if that is larger
+  max_risk_usd: 1.00        # skip trade if SL distance x pip value > this
+  max_open_positions: 1
+  max_trades_per_day: 3     # per UTC day
+  daily_loss_cap_usd: 2.00  # realized loss per UTC day; blocks new trades until tomorrow
+  kill_switch_equity: 6.00  # close positions + stop the bot
+  profit_alert_equity: 30.00
+
+virtual_account:
+  virtual_balance: 10.0     # null = use the real account equity (required for live)
+  leverage: 500             # only used for the margin estimate/warning
+  state_file: state/virtual_account.json
+
+broker_time:
+  # MT5 bar times are broker server time. Most brokers run UTC+2, and UTC+3
+  # while US daylight saving is active (so 00:00 server = 17:00 New York).
+  base_utc_offset_hours: 2
+  dst_rule: us              # us | eu | none
+
+backtest:
+  history_bars: 99000       # M15 bars to download (capped by the terminal's "Max bars in chart")
+  start_balance: 10.0
+  costs:
+    spread_floor_pips: 1.0  # bar spread is the bar's MINIMUM spread (often 0), so floor it
+    slippage_pips: 0.2      # per side, on market fills (entries, stop-loss exits)
+    commission_per_lot_usd: 0.0   # round turn
+  pessimistic_costs:
+    spread_floor_pips: 1.5
+    slippage_pips: 0.2
+    commission_per_lot_usd: 7.0
+  grid_sl_atr_mult: [1.0, 1.5, 2.0]
+  grid_tp_r_mult: [1.5, 2.0]
+
+live:
+  enabled: false            # live mode also needs --confirm-live and a matching account_number
+  account_number: null      # set it in config.local.yaml (gitignored), never here
+  deviation_points: 20
+  max_order_retries: 3
+  loop_seconds: 10

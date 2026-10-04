@@ -1,0 +1,6 @@
+# Private settings. Copy this file to config.local.yaml (which is gitignored)
+# and put real values there. They are merged on top of config.yaml.
+# Never put real account numbers or credentials in config.yaml.
+
+live:
+  account_number: 12345678   # placeholder: your real MT5 login goes in config.local.yaml only
